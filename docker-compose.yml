@@ -11,21 +11,46 @@ services:
 
     # configure le port
     ports : 
-    - "5000:80"
+     - "5000:80"
 
     #reseau pour communiquer avec redis, les conteneurs doivent pouvoir communiquer de maniere isolée
     networks:
-    - poll-tier
+     - poll-tier
 
   # important on protege dans des var les mdp 
     environment:
-    - REDIS_HOST=redis
+     - REDIS_HOST=redis
 
   # ordre précis pour popeye, base de donnée avant les services
     depends_on:
-    - redis
+     - redis
     # en cas de probleme redemarre automatiquement
     restart: always
+
+
+
+
+
+# REDIS
+  redis:
+    image: redis:7
+
+  # configure le port
+    ports:
+      - "6379:6379"
+    
+    #reseau pour communiquer avec redis, les conteneurs doivent pouvoir communiquer de maniere isolée
+    networks:
+      - poll-tier
+      - back-tier
+
+  # en cas de probleme redemarre automatiquement
+    restart: always
+
+
+
+
+
 
 
 # WORKER
@@ -34,17 +59,17 @@ services:
 
     #reseau pour communiquer avec redis, les conteneurs doivent pouvoir communiquer de maniere isolée
     networks:
-    - back-tier
+     - back-tier
 
   # important on protege dans des var les mdp 
   # port officiel de lapp
     environment:
-    - REDIS_HOST=redis
-    - POSTGRES_HOST=db
-    - POSTGRES_PORT=5432
-    - POSTGRES_DB=${NAME}
-    - POSTGRES_USER=${USER}
-    - POSTGRES_PASSWORD=${PASSWORD}
+     - REDIS_HOST=redis
+     - POSTGRES_HOST=db
+     - POSTGRES_PORT=5432
+     - POSTGRES_DB=${NAME}
+     - POSTGRES_USER=${USER}
+     - POSTGRES_PASSWORD=${PASSWORD}
 
   # ordre précis pour popeye, base de donnée avant les services
     depends_on:
@@ -53,6 +78,41 @@ services:
 
     # en cas de probleme redemarre automatiquement
     restart: always
+
+
+
+
+
+
+
+# DB postgreSQL 16 base de donnée
+  db:
+    image: postgres:16
+
+    # base de donnée
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  # important on protege dans des var les mdp 
+    environment:
+     - POSTGRES_DB=${NAME}
+     - POSTGRES_USER=${USER}
+     - POSTGRES_PASSWORD=${PASSWORD}
+
+    #reseau pour communiquer avec redis, les conteneurs doivent pouvoir communiquer de maniere isolée
+    networks:
+      - result-tier
+      - back-tier
+
+  # en cas de probleme redemarre automatiquement
+    restart: always
+
+
+
+
+
+
 
 # RESULT
   result:
@@ -82,3 +142,14 @@ services:
 
   # en cas de probleme redemarre automatiquement
     restart: always
+
+
+
+# instruction global pour tout le package au dessus
+networks:
+  poll-tier:
+  back-tier:
+  result-tier:
+
+volumes:
+  db-data:

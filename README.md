@@ -128,7 +128,11 @@ CMD ["java", "-jar", "worker-jar-with-dependencies.jar"]`
 ### Créer un fichier Docker compose
 Créez docker-commpose.yml à la racine du projet
 
+IMPORTANT /!\ ne surtout pas écrire en dur les mdp.
 
+
+### Exécuter compose
+docker compose up --build
 
 
 ### Choisir une image 
