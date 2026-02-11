@@ -1,0 +1,84 @@
+# 5 services une commande
+# chef dorchestre
+# ATTENTION A LINDENTATION
+services:
+
+
+
+# PULL
+  poll:
+    build: ./poll
+
+    # configure le port
+    ports : 
+    - "5000:80"
+
+    #reseau pour communiquer avec redis, les conteneurs doivent pouvoir communiquer de maniere isolée
+    networks:
+    - poll-tier
+
+  # important on protege dans des var les mdp 
+    environment:
+    - REDIS_HOST=redis
+
+  # ordre précis pour popeye, base de donnée avant les services
+    depends_on:
+    - redis
+    # en cas de probleme redemarre automatiquement
+    restart: always
+
+
+# WORKER
+  worker:
+    build: ./worker
+
+    #reseau pour communiquer avec redis, les conteneurs doivent pouvoir communiquer de maniere isolée
+    networks:
+    - back-tier
+
+  # important on protege dans des var les mdp 
+  # port officiel de lapp
+    environment:
+    - REDIS_HOST=redis
+    - POSTGRES_HOST=db
+    - POSTGRES_PORT=5432
+    - POSTGRES_DB=${NAME}
+    - POSTGRES_USER=${USER}
+    - POSTGRES_PASSWORD=${PASSWORD}
+
+  # ordre précis pour popeye, base de donnée avant les services
+    depends_on:
+      - redis
+      - db
+
+    # en cas de probleme redemarre automatiquement
+    restart: always
+
+# RESULT
+  result:
+    build: ./result
+
+
+  # configure le port
+    ports : 
+      - "5001:80"
+
+    #reseau pour communiquer avec redis, les conteneurs doivent pouvoir communiquer de maniere isolée
+    networks:
+      - result-tier
+
+  # important on protege dans des var les mdp 
+  # port officiel de lapp
+    environment:
+     - POSTGRES_HOST=db
+     - POSTGRES_PORT=5432
+     - POSTGRES_DB=${NAME}
+     - POSTGRES_USER=${USER}
+     - POSTGRES_PASSWORD=${PASSWORD}
+
+  # ordre précis pour popeye, base de donnée avant les services
+    depends_on:
+     - db
+
+  # en cas de probleme redemarre automatiquement
+    restart: always

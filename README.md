@@ -53,7 +53,6 @@ sudo usermod -aG docker $USER
 ### Nettoyer des mauvaises installations Docker :
 sudo apt-get remove docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc
 
-
 ---------------------------------------------------------
                     IMAGES DOCKER
 ---------------------------------------------------------
@@ -94,6 +93,40 @@ COPY . .
 EXPOSE 80
 
 CMD ["npm", "start"]` 
+
+
+## Worker
+L'image sera construite à l'aide d'un build multi-étapes.
+
+### Créer un fichier Dockerfile
+
+`FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /app
+
+COPY pom.xml .
+
+RUN mvn dependency:resolve
+
+COPY src ./src
+
+RUN mvn package
+
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/target/worker-jar-with-dependencies.jar .
+
+CMD ["java", "-jar", "worker-jar-with-dependencies.jar"]`
+
+
+-----------------------------------------------------------------
+                      DOCKER COMPOSE
+-----------------------------------------------------------------
+
+### Créer un fichier Docker compose
+Créez docker-commpose.yml à la racine du projet
 
 
 
