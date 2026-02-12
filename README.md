@@ -10,8 +10,7 @@ Essai et découverte &amp; Docker.
 ## Pré-requis
 Pour faire tourner ce projet, vous avez besoin de :
 1. **Docker** (node.js sera installé automatiquement)
-1. **Un compte github** (et une clé SSH configurée)
-2. **Un serveur local PHP** (via le terminal).
+2. **Un compte github** (et une clé SSH configurée)
 3. **Git** (pour cloner le projet)
 
 ## Note avant de commencer :
@@ -127,122 +126,36 @@ CMD ["java", "-jar", "worker-jar-with-dependencies.jar"]`
 
 ### Créer un fichier Docker compose
 Créez docker-commpose.yml à la racine du projet
+Pour chaque service vous aurez une structure ressemblant à celle ci (ex pour pull):
+`
+  poll:
+    build: ./poll
 
-IMPORTANT /!\ ne surtout pas écrire en dur les mdp.
+    ports : 
+     - "5000:80"
+
+     - poll-tier
+
+    environment:
+     - REDIS_HOST=redis
+
+    depends_on:
+     - redis
+    restart: always
+`
+
+
+ **IMPORTANT /!\ déclarer *impérativement* dans environments pour PORT, DB, USER et PASSWORD en variables dans un .env .**
 
 
 ### Exécuter compose
 docker compose up --build
 
 
-### Choisir une image 
-https://hub.docker.com/
-
-### Pull des images
-(s'il y a un message d'erreur, créez vous un compte et connectez vous)
-docker pull nginx
-
-### Lister les images
-docker images
-
-
-### Lancer un conteneur
-(le conteneur fonctionnera en arrière-plan)
-docker run -d nginx
-(cela devrait afficher un identifiant)
-
-Pour voir le conteneur en fond :
-docker ps
-
-### Arrêter le conteneur
-docker stop numéro-d-identifiant
-
-### Supprimer un conteneur
-docker rm numéro-d-identifiant
-
-### Run une version spécifique
-docker run -d nginx:1.18
-
-### Run sous un port précis
-docker run -d -p 8080:80 nginx
-
-### Accéder au site
-Ne confondez pas le port du container avec le port de l'host.
-Le premier correspond au port sur lequel l'application écoute à l'intérieur du conteneur, et le second est le port sur lequel l'application est accessible depuis l'hôte (et depuis l'extérieur).
-
-http://localhost:8080
-
-
-### Chercher l'ID du conteneur
-(L'ID change à chaque run)
-docker ps
-
-### Afficher la date du conteneur en cours d'execution
-docker exec <ID> date
-
-### Afficher les logs
-docker logs <ID>
-
-### Afficher les logs en temps réél
-docker logs -f <ID>
-
-
------------------------------------------------
-              FAIRE SA PROPRE IMAGE
------------------------------------------------
-
-### Configurer Dockerfile :
-FROM debian:bookworm-slim
-
-RUN apt-get update && apt-get install -y nodejs npm
-
-COPY . .
-
-RUN npm install
-
-EXPOSE 3000
-
-CMD ["node", "app.js"]
-
-### Exécuter Dockerfile
-(prendra environ 20 minutes)
-docker build -t <nom-de-votre-choix> .
-
-### Lancer le conteneur
-docker run -p <votre-port> <nom-de-votre-choix>
-
-### Accéder au site :
-http://localhost:8080
-
-## Docker compose
-### Créer un fichier 
-docker-compose.yml
-
-### Service jigglypuff-server (voir en bas pour documentation)
-- Doit construire l'image en utilisant le Dockerfile
-- Doit être au port 8080:3000.
-- Définit une variable d'environnement JIGGLYPUUF à shiny (oui le pokémon)
-
-Editer le fichier Docker compose :
-services:
-  jigglypuff-serveur:
-    build: .
-    ports:
-      - "8080:3000"
-    environment:
-      - JIGGLYPUFF=shiny
-
-  nginx:
-    image: nginx:1.24-alpine
-    ports:
-    - "5000:80"
-
-### Lancer la commande
-docker compose up
-
 ### Accèder aux sites
-JIGGLYPUFF : http://localhost:8080
-NGINX : http://localhost:5000
+Favorite DevOps : http://localhost:5000
+Résulats des votes : http://localhost:5001
+
 
 -----------------------------------------------
               DOCS UTILES
